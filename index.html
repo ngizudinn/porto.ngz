@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portfolio — Planologi & Geografi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0b0f0c;
+      --bg2: #111812;
+      --surface: #151d16;
+      --border: #1f2e22;
+      --emerald: #34d87a;
+      --emerald-dim: #1e8a4a;
+      --emerald-glow: rgba(52, 216, 122, 0.12);
+      --text: #e8f0ea;
+      --text-muted: #7a9480;
+      --text-dim: #3d5442;
+      --accent2: #a3e4b5;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      width: 10px; height: 10px;
+      background: var(--emerald);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.15s ease, opacity 0.15s;
+      mix-blend-mode: difference;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1px solid var(--emerald);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transition: transform 0.4s cubic-bezier(.25,.8,.25,1), opacity 0.3s;
+      opacity: 0.5;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Grid background */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.5rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    nav.scrolled {
+      border-color: var(--border);
+      background: rgba(11,15,12,0.85);
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--emerald);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--emerald); }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 0 4rem;
+      gap: 4rem;
+      z-index: 1;
+    }
+
+    .hero-left { padding-top: 6rem; }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--emerald);
+      border: 1px solid var(--emerald-dim);
+      padding: 0.4rem 0.9rem;
+      border-radius: 2px;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.2s forwards;
+    }
+    .hero-tag::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--emerald);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+    .hero-name span {
+      color: var(--emerald);
+      display: block;
+    }
+
+    .hero-desc {
+      margin-top: 1.8rem;
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 420px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.6s forwards;
+    }
+
+    .hero-cta {
+      margin-top: 2.5rem;
+      display: flex;
+      gap: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.8s forwards;
+    }
+    .btn-primary {
+      background: var(--emerald);
+      color: #030703;
+      padding: 0.8rem 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      cursor: none;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-2px); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      padding: 0.8rem 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      cursor: none;
+      transition: border-color 0.2s, color 0.2s, transform 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--emerald); color: var(--emerald); transform: translateY(-2px); }
+
+    /* Hero right — map visual */
+    .hero-right {
+      position: relative;
+      height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeIn 1.2s ease 0.6s forwards;
+    }
+    .map-frame {
+      position: relative;
+      width: 380px;
+      height: 460px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .map-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 60% 40%, rgba(52,216,122,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 80%, rgba(52,216,122,0.05) 0%, transparent 50%);
+    }
+    .map-svg {
+      width: 100%;
+      height: 100%;
+      opacity: 0.6;
+    }
+    .map-pin {
+      position: absolute;
+      width: 8px; height: 8px;
+      background: var(--emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--emerald);
+    }
+    .map-pin::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border: 1px solid var(--emerald);
+      border-radius: 50%;
+      animation: ripple 2s ease-out infinite;
+    }
+    @keyframes ripple {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+    .map-pin-1 { top: 35%; left: 45%; }
+    .map-pin-2 { top: 55%; left: 30%; animation-delay: 0.5s; }
+    .map-pin-3 { top: 25%; left: 65%; animation-delay: 1s; }
+
+    .map-label {
+      position: absolute;
+      bottom: -1px; left: -1px; right: -1px;
+      padding: 1rem 1.2rem;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--emerald);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .hero-stats {
+      position: absolute;
+      right: -60px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .stat-item {
+      text-align: right;
+    }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--emerald);
+      line-height: 1;
+    }
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* Scroll indicator */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.5s forwards;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--emerald), transparent);
+      animation: scrollDown 2s ease-in-out infinite;
+    }
+    @keyframes scrollDown {
+      0%, 100% { transform: scaleY(1); opacity: 1; }
+      50% { transform: scaleY(0.5); opacity: 0.4; }
+    }
+
+    /* SECTIONS */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 8rem 4rem;
+    }
+
+    .section-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--emerald);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    /* ABOUT */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 6rem;
+      align-items: start;
+      margin-top: 4rem;
+    }
+    .about-visual {
+      position: relative;
+    }
+    .about-photo-frame {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .about-photo-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at top, rgba(52,216,122,0.1) 0%, transparent 60%);
+    }
+    .photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      color: var(--text-dim);
+    }
+    .photo-icon {
+      font-size: 3rem;
+      opacity: 0.3;
+    }
+    .photo-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .about-corner {
+      position: absolute;
+      top: -12px; right: -12px;
+      width: 60px; height: 60px;
+      border-top: 2px solid var(--emerald);
+      border-right: 2px solid var(--emerald);
+    }
+    .about-corner-bl {
+      position: absolute;
+      bottom: -12px; left: -12px;
+      width: 60px; height: 60px;
+      border-bottom: 2px solid var(--emerald-dim);
+      border-left: 2px solid var(--emerald-dim);
+    }
+
+    .about-content p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-bottom: 1.5rem;
+    }
+    .about-content p strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .expertise-list {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+    .expertise-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+    .expertise-item::before {
+      content: '';
+      width: 4px; height: 4px;
+      background: var(--emerald);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* PROJECTS */
+    .projects { background: var(--bg2); }
+    .projects-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 4rem;
+    }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5px;
+    }
+
+    .project-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      transition: border-color 0.3s, transform 0.3s;
+      overflow: hidden;
+      cursor: none;
+    }
+    .project-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--emerald-glow);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .project-card:hover {
+      border-color: var(--emerald-dim);
+      transform: translateY(-4px);
+    }
+    .project-card:hover::before { opacity: 1; }
+
+    .project-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 4rem;
+      font-weight: 900;
+      color: var(--text-dim);
+      line-height: 1;
+      margin-bottom: 1.5rem;
+      transition: color 0.3s;
+    }
+    .project-card:hover .project-num { color: var(--emerald-dim); }
+
+    .project-category {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--emerald);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.7rem;
+    }
+    .project-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.8rem;
+      line-height: 1.3;
+    }
+    .project-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .project-footer {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .project-year {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+    .project-arrow {
+      font-size: 1rem;
+      color: var(--emerald);
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .project-card:hover .project-arrow { opacity: 1; transform: translateX(0); }
+
+    /* CONTACT */
+    .contact { border-top: 1px solid var(--border); }
+    .contact-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: start;
+      margin-top: 4rem;
+    }
+    .contact-text p {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 1.05rem;
+    }
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+    }
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.1em;
+      transition: color 0.2s;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .contact-link:hover { color: var(--emerald); }
+    .contact-link-icon { color: var(--emerald); font-size: 0.9rem; }
+
+    .contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .form-input, .form-textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.9rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+    }
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--emerald-dim);
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-dim); }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 2rem 4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+    }
+    .footer-made {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+    .footer-made span { color: var(--emerald); }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Divider line */
+    .line-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--emerald-dim), transparent);
+      margin: 1rem 0;
+    }
+
+    @media (max-width: 900px) {
+      nav { padding: 1.5rem 2rem; }
+      .hero { grid-template-columns: 1fr; padding: 8rem 2rem 4rem; }
+      .hero-right { display: none; }
+      section { padding: 5rem 2rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .contact-inner { grid-template-columns: 1fr; gap: 3rem; }
+      footer { flex-direction: column; gap: 1rem; padding: 2rem; }
+      .projects-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="nav-logo">// Portfolio</div>
+    <ul class="nav-links">
+      <li><a href="#about">Tentang</a></li>
+      <li><a href="#projects">Proyek</a></li>
+      <li><a href="#contact">Kontak</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">Planologi &amp; Geografi</div>
+      <h1 class="hero-name">
+        Nama<br/>
+        <span>Kamu</span>
+        Di Sini
+      </h1>
+      <p class="hero-desc">
+        Perencana wilayah dan kota dengan passion dalam analisis spasial, 
+        pemetaan geografi, dan perencanaan tata ruang berbasis data.
+      </p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn-primary">Lihat Proyek</a>
+        <a href="#contact" class="btn-ghost">Hubungi Saya</a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="map-frame">
+        <svg class="map-svg" viewBox="0 0 380 460" xmlns="http://www.w3.org/2000/svg">
+          <!-- Grid lines simulating map -->
+          <defs>
+            <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse">
+              <path d="M 38 0 L 0 0 0 38" fill="none" stroke="#1f2e22" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)"/>
+          <!-- Contour lines -->
+          <path d="M 30 200 Q 80 150 150 170 Q 220 190 280 160 Q 320 140 350 180" fill="none" stroke="#1e8a4a" stroke-width="1" opacity="0.4"/>
+          <path d="M 20 240 Q 90 200 160 220 Q 240 245 300 210 Q 340 190 370 220" fill="none" stroke="#1e8a4a" stroke-width="1" opacity="0.3"/>
+          <path d="M 40 280 Q 100 250 170 265 Q 250 285 310 255 Q 350 240 375 265" fill="none" stroke="#1e8a4a" stroke-width="1" opacity="0.2"/>
+          <!-- Territory shape -->
+          <path d="M 80 100 Q 150 60 240 80 Q 300 95 340 140 Q 360 180 350 250 Q 340 310 290 350 Q 220 390 160 370 Q 100 345 70 290 Q 45 240 50 180 Q 55 130 80 100Z" fill="rgba(52,216,122,0.04)" stroke="#1e8a4a" stroke-width="1" opacity="0.5"/>
+          <!-- Roads -->
+          <line x1="0" y1="230" x2="380" y2="230" stroke="#1f2e22" stroke-width="2"/>
+          <line x1="190" y1="0" x2="190" y2="460" stroke="#1f2e22" stroke-width="2"/>
+          <line x1="0" y1="115" x2="380" y2="340" stroke="#1a2618" stroke-width="1"/>
+          <line x1="0" y1="320" x2="380" y2="120" stroke="#1a2618" stroke-width="1"/>
+          <!-- Zone blocks -->
+          <rect x="100" y="140" width="60" height="45" fill="rgba(52,216,122,0.06)" stroke="#1e8a4a" stroke-width="0.5"/>
+          <rect x="200" y="160" width="50" height="35" fill="rgba(52,216,122,0.04)" stroke="#1e8a4a" stroke-width="0.5"/>
+          <rect x="120" y="260" width="70" height="50" fill="rgba(52,216,122,0.05)" stroke="#1e8a4a" stroke-width="0.5"/>
+          <rect x="230" y="250" width="55" height="40" fill="rgba(52,216,122,0.03)" stroke="#1e8a4a" stroke-width="0.5"/>
+        </svg>
+        <div class="map-pin map-pin-1"></div>
+        <div class="map-pin map-pin-2"></div>
+        <div class="map-pin map-pin-3"></div>
+        <div class="map-label">// Spatial Analysis Active</div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">5+</div>
+          <div class="stat-label">Tahun<br/>Pengalaman</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">12</div>
+          <div class="stat-label">Proyek<br/>Selesai</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">8</div>
+          <div class="stat-label">Kota<br/>Dikerjakan</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-hint">
+      <div class="scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-tag">// 01 — Tentang Saya</div>
+    <div class="about-grid">
+      <div class="about-visual reveal">
+        <div class="about-photo-frame">
+          <div class="photo-placeholder">
+            <div class="photo-icon">◎</div>
+            <div class="photo-text">Foto Kamu</div>
+          </div>
+        </div>
+        <div class="about-corner"></div>
+        <div class="about-corner-bl"></div>
+      </div>
+      <div class="about-content reveal">
+        <h2 class="section-heading">Membangun Ruang<br/>yang <span style="color:var(--emerald)">Bermakna</span></h2>
+        <div class="line-divider"></div>
+        <p>
+          Saya adalah seorang <strong>Perencana Wilayah dan Kota</strong> yang berfokus pada pendekatan 
+          berbasis data dalam perencanaan tata ruang. Dengan latar belakang geografi, saya mengintegrasikan 
+          analisis spasial untuk menciptakan solusi perencanaan yang komprehensif.
+        </p>
+        <p>
+          Pengalaman saya mencakup <strong>pemetaan GIS, analisis kesesuaian lahan, 
+          perencanaan infrastruktur</strong>, dan penyusunan dokumen RDTR. Saya percaya bahwa 
+          ruang yang baik direncanakan dengan memahami manusia dan alam secara bersama-sama.
+        </p>
+        <div class="expertise-list">
+          <div class="expertise-item">Analisis Spasial GIS</div>
+          <div class="expertise-item">Perencanaan Tata Ruang</div>
+          <div class="expertise-item">Pemetaan & Kartografi</div>
+          <div class="expertise-item">RDTR / RTRW</div>
+          <div class="expertise-item">Remote Sensing</div>
+          <div class="expertise-item">Analisis Kesesuaian Lahan</div>
+          <div class="expertise-item">ArcGIS / QGIS</div>
+          <div class="expertise-item">Perencanaan Infrastruktur</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" class="projects">
+    <div class="projects-header reveal">
+      <div>
+        <div class="section-tag">// 02 — Proyek</div>
+        <h2 class="section-heading">Karya & Riset</h2>
+      </div>
+      <p style="color: var(--text-muted); max-width: 300px; font-size: 0.9rem;">
+        Kumpulan proyek perencanaan, pemetaan, dan riset geografi yang telah diselesaikan.
+      </p>
+    </div>
+    <div class="projects-grid">
+      <div class="project-card reveal">
+        <div class="project-num">01</div>
+        <div class="project-category">Tata Ruang</div>
+        <div class="project-title">Revisi RDTR Kawasan Perkotaan</div>
+        <p class="project-desc">Penyusunan dan revisi rencana detail tata ruang kawasan perkotaan dengan pendekatan partisipatif dan berbasis data spasial.</p>
+        <div class="project-footer">
+          <span class="project-year">2024</span>
+          <span class="project-arrow">→</span>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-num">02</div>
+        <div class="project-category">Analisis Spasial</div>
+        <div class="project-title">Pemetaan Kerentanan Banjir</div>
+        <p class="project-desc">Analisis GIS multi-kriteria untuk memetakan zona kerentanan banjir di wilayah DAS menggunakan data DEM dan citra satelit.</p>
+        <div class="project-footer">
+          <span class="project-year">2023</span>
+          <span class="project-arrow">→</span>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-num">03</div>
+        <div class="project-category">Infrastruktur</div>
+        <div class="project-title">Kajian Pengembangan Kawasan TOD</div>
+        <p class="project-desc">Studi kelayakan dan perencanaan kawasan Transit Oriented Development di koridor transportasi massal perkotaan.</p>
+        <div class="project-footer">
+          <span class="project-year">2023</span>
+          <span class="project-arrow">→</span>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-num">04</div>
+        <div class="project-category">Remote Sensing</div>
+        <div class="project-title">Analisis Perubahan Tutupan Lahan</div>
+        <p class="project-desc">Pemantauan perubahan penggunaan lahan selama 20 tahun menggunakan citra Landsat dan teknik klasifikasi terbimbing.</p>
+        <div class="project-footer">
+          <span class="project-year">2022</span>
+          <span class="project-arrow">→</span>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-num">05</div>
+        <div class="project-category">Riset</div>
+        <div class="project-title">Kajian Daya Dukung Lingkungan</div>
+        <p class="project-desc">Evaluasi daya dukung dan daya tampung lingkungan hidup sebagai dasar penyusunan kebijakan pembangunan berkelanjutan.</p>
+        <div class="project-footer">
+          <span class="project-year">2022</span>
+          <span class="project-arrow">→</span>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-num">06</div>
+        <div class="project-category">Perkotaan</div>
+        <div class="project-title">Studi Revitalisasi Kawasan Pesisir</div>
+        <p class="project-desc">Perencanaan revitalisasi kawasan pesisir terpadu dengan mempertimbangkan aspek ekologi, sosial, dan ekonomi masyarakat lokal.</p>
+        <div class="project-footer">
+          <span class="project-year">2021</span>
+          <span class="project-arrow">→</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="contact">
+    <div class="section-tag">// 03 — Kontak</div>
+    <div class="contact-inner">
+      <div class="contact-text reveal">
+        <h2 class="section-heading">Mari<br/><span style="color:var(--emerald)">Berkolaborasi</span></h2>
+        <div class="line-divider"></div>
+        <p>
+          Terbuka untuk kolaborasi proyek, konsultasi perencanaan, atau sekadar 
+          berdiskusi tentang tata ruang dan geografi. Jangan ragu untuk menghubungi saya.
+        </p>
+        <div class="contact-links">
+          <a href="mailto:kamu@email.com" class="contact-link">
+            <span class="contact-link-icon">✉</span>
+            kamu@email.com
+          </a>
+          <a href="https://linkedin.com" class="contact-link">
+            <span class="contact-link-icon">in</span>
+            linkedin.com/in/namakamu
+          </a>
+          <a href="#" class="contact-link">
+            <span class="contact-link-icon">◎</span>
+            Yogyakarta, Indonesia
+          </a>
+        </div>
+      </div>
+      <div class="contact-form reveal">
+        <div class="form-group">
+          <label class="form-label">Nama</label>
+          <input type="text" class="form-input" placeholder="Nama lengkap kamu"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" placeholder="email@kamu.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pesan</label>
+          <textarea class="form-textarea" rows="5" placeholder="Ceritakan proyekmu..."></textarea>
+        </div>
+        <button class="btn-primary" style="width: 100%; padding: 1rem; font-size: 0.72rem; cursor: none;">
+          Kirim Pesan →
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-copy">© 2025 — Nama Kamu. All rights reserved.</div>
+    <div class="footer-made">Built with <span>♥</span> for better cities</div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const cursorRing = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx - 5 + 'px';
+      cursor.style.top = my - 5 + 'px';
+    });
+    function animRing() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      cursorRing.style.left = rx - 18 + 'px';
+      cursorRing.style.top = ry - 18 + 'px';
+      requestAnimationFrame(animRing);
+    }
+    animRing();
+    document.querySelectorAll('a, button, .project-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.transform = 'scale(2.5)';
+        cursorRing.style.transform = 'scale(1.5)';
+        cursorRing.style.opacity = '0.8';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.transform = 'scale(1)';
+        cursorRing.style.transform = 'scale(1)';
+        cursorRing.style.opacity = '0.5';
+      });
+    });
+
+    // Nav scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 100);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>
